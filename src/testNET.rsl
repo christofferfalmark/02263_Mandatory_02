@@ -1,0 +1,33 @@
+NET
+scheme testNET =
+extend NET with 
+class
+  value 
+    a : Stop = ("A", 2),
+    b : Stop = ("B", 3),
+    c : Stop = ("C", 2),
+    d : Stop = ("D", 2),
+    net : Net = addConnection("B", "C", 4, 3, 12,
+	    			addConnection("A", "B", 2, 3, 10,
+	    				addConnection("B", "D", 4, 2, 7, insertStop(
+	    					"D", 2, insertStop(
+	    						"C", 2, insertStop(
+	    							"B", 3, insertStop(
+	    								"A", 2, empty)
+	    							)
+	    						)
+    						)
+						)
+					)
+				)
+  test_case
+  	let 
+  		(s1, c1) = a,
+  		(s2, c2) = b,
+  		(s3, c3) = c,
+  		(s4, c4) = d
+  	in
+  		-- B -> A virker ikke men A -> B gør.. Find en måde så både A>B og B>A dúr.
+		minDrivingTime("A", "B", net)
+	end
+ end
