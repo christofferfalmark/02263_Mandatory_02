@@ -1,0 +1,21 @@
+Net
+	- Stop
+		* Name
+		* Capacity (Maximum number of trams allowed to be at a stop at the same time)
+	- Connection
+		* Capacity (Maximum number of trams allowed to be on the single track at the same time)
+		* Minimum driving time (the time it MUST at least take for a tram to drive between the two stops)
+		* Minimum headway (the minimum time that MUST pass between two following trains entering or leaving the same track of the conn)
+
+Time Tables
+	- Tram
+		* Unique name
+	
+	- Time Table
+		- name of tram
+		- plan for that tram
+			* the name of the stops in the net where the tram will stop
+			* for each stop: arrival- and departure time
+		
+	- Time
+		In whole minutes
