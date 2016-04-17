@@ -2,13 +2,13 @@ NET
 scheme TIMETABLE = extend NET with
 class
   type 
-    TimeTable = ..., -- time tables
-    ...,
+    TimeTable = TramId >< Stop-set, -- time tables
+    Stop = Text >< Nat >< Nat,	-- stopId, arrival, departure
     TramId = Text -- tram names
 
     value /* generators */
       -- the empty timetable
-      empty: TimeTable = ...,
+      empty: TimeTable = {},
 
       -- add to a time table an empty plan for a new tram
       addTram: TramId >< TimeTable -> TimeTable
@@ -28,8 +28,6 @@ class
  
   value /* predicates to check time tables */   
      isWellformed : TimeTable >< Net -> Bool
-     isWellformed(t, n) is ...,
-
-     ...
-     
+     isWellformed(t, n) is true
+          
 end  
