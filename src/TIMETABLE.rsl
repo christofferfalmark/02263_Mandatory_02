@@ -2,29 +2,29 @@ NET
 scheme TIMETABLE = extend NET with
 class
   type 
-    TimeTable = TramId >< Stop-set, -- time tables
-    Stop = Text >< Nat >< Nat,	-- stopId, arrival, departure
+    TimeTable = TramId -m-> TimeSlot, -- time tables
+    TimeSlot = StopId >< Time >< Time,	-- stopId, arrival, departure
     TramId = Text -- tram names
 
     value /* generators */
       -- the empty timetable
-      empty: TimeTable = {},
+      empty: TimeTable = [],
 
-      -- add to a time table an empty plan for a new tram
+	  -- add an empty plan for a new tram to a time table
       addTram: TramId >< TimeTable -> TimeTable
-      ...,
+      addTram(id, table) is table !! [id +> empty],	-- argh, virker ikke med map pga. return type.
 
       -- add a stop with arrival time and departure time to the plan for a given tram
       addStop: TramId >< StopId >< Time >< Time >< TimeTable -> TimeTable
-      ...
+      addStop(tId, sId, arrival, depature, table) is empty
+      
       /** commit nuuuu */
   value /* observers */
      -- check whether a tram with a given name exists in a given time table
      isIn : TramId >< TimeTable -> Bool
-      ...,
+     isIn(id, table) is true
 
      -- you can add more observers here
-     ...
  
   value /* predicates to check time tables */   
      isWellformed : TimeTable >< Net -> Bool
