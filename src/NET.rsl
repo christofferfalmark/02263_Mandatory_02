@@ -1,40 +1,35 @@
 scheme NET =
 class
   type 
-    Net = (StopId -m-> Capacity) >< Connection, -- tram nets
+    Net = (StopId -m-> Capacity) >< Connections, -- tram nets
     Headway = Time, -- minimum headways
     DrivingTime = Time, -- minimum driving times
     Time = Nat, -- times in number of minutes
     Capacity = Nat, -- capacities
     StopId = Text,  -- names of stops
     Stop = StopId >< Capacity,
-    Connection = StopId >< StopId -m-> (Headway >< DrivingTime >< Capacity)
+    Connections = StopId >< StopId -m-> (Headway >< DrivingTime >< Capacity)
     
   value /* generators */
     empty :  Net = ([], []) ,  -- the empty net
 
     -- insert a stop with a given name and capacity 
     insertStop : StopId >< Capacity >< Net -> Net
-    insertStop(sId, cap, (stops, connections)) is (stops union [sId +> cap], connections),
+    insertStop(sId, cap, (stops, connections)) is (stops !! [sId +> cap], connections),
 
     -- add a connection between given stops, 
     -- with the given capacity, minimum driving time and minimum headway
     addConnection : StopId >< StopId >< Headway >< Capacity >< DrivingTime >< Net -> Net
-    addConnection(s1, s2, h, c, d, (stops, connections)) is (stops, connections !! [(s1, s2) +> (h, d, c)])
+    addConnection(s1, s2, h, c, d, (stops, connections)) is (stops, connections !! [(s1, s2) +> (h, d, c)] !! [(s2, s1) +> (h, d, c)])
     		
   value /* observers */
     -- check whether a stop is in a network     
     isIn : StopId >< Net -> Bool
-	isIn(sId, net) is
-	let 
-		(stops, connection) = net
-	in
-		sId isin dom stops 
-	end,
+	isIn(sId, (stops, connection)) is sId isin dom stops,
  
     -- check whether two stops are directly connected in a network        
     areDirectlyConnected : StopId >< StopId >< Net -> Bool
-    areDirectlyConnected(s1, s2, (stops, connections)) is (s1, s2) isin dom connections \/ (s2, s1) isin dom connections,
+    areDirectlyConnected(s1, s2, (stops, connections)) is (s1, s2) isin dom connections,
     
     -- get minimum driving time between two connected stops        
     minHeadway : StopId >< StopId >< Net -~-> Headway
@@ -42,7 +37,7 @@ class
 
     -- get minimum driving time between two connected stops        
     minDrivingTime : StopId >< StopId >< Net -~-> DrivingTime
-    minDrivingTime(s1, s2, (stops, connections)) is let (headway, drivingtime, capacity) = connections(s1,s2) in drivingtime end, 
+    minDrivingTime(s1, s2, (stops, connections)) is let (headway, drivingtime, capacity) = connections(s1, s2) in drivingtime end, 
 
     -- get the capacity for a connection between two connected stops
     capacity : StopId >< StopId >< Net -~-> Capacity
@@ -54,5 +49,23 @@ class
 
   value /* predicates to check nets */
     isWellformed : Net -> Bool
-    isWellformed(n) is true
+    isWellformed(net) is let (stops, connections) = net in
+    	stopsInConnectionExistsInNet(connections, net) /\ checkConnectionsAreValid(net) 
+    	end,
+       
+    checkConnectionsAreValid : Net -> Bool
+    checkConnectionsAreValid(net) is
+    let (stops, conn) = net in 
+    	(all (s1, s2) : StopId >< StopId :- (s1, s2) isin conn => 
+    		(exists (s3, s4) : StopId >< StopId :- (s3, s4) isin conn /\
+    			(s1 = s4 /\ s2 = s3 /\ conn(s1, s2) = conn(s3, s4))
+			)
+		)
+    end,
+        
+    stopsInConnectionExistsInNet : Connections >< Net -> Bool
+    stopsInConnectionExistsInNet(conn, (stops, connections)) is
+    (all (s1, s2) : StopId >< StopId :- (s1, s2) isin conn => 
+    	s1 isin stops /\ s1 isin stops
+    )
 end
