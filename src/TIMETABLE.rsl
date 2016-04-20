@@ -1,8 +1,8 @@
 NET
 scheme TIMETABLE = extend NET with
 class
-	type 
-	    TimeTable = TramId -m-> TimeSlot-set, -- time tables
+	type
+	    TimeTable = TramId -m-> TimeSlot-list, -- time tables
 	    TimeSlot = StopId >< Time >< Time,	-- stopId, arrival, departure
 	    TramId = Text -- tram names
 
@@ -12,21 +12,21 @@ class
 		
 		-- add an empty plan for a new tram to time table
 		addTram: TramId >< TimeTable -> TimeTable
-		addTram(id, table) is table !! [id +> {}],
+		addTram(id, table) is table !! [id +> <..>],
 		
 		-- add a stop with arrival time and departure time to the plan for a given tram
 		addStop: TramId >< StopId >< Time >< Time >< TimeTable -> TimeTable
 		addStop(tId, sId, arrival, depature, table) is 
-			if table(tId) = {} then
+			if table(tId) = <..> then
 				let 
 					plan = table(tId) 
 				in 
-					table !! [tId +> {(sId, arrival, depature)}]
+					table !! [tId +> <.(sId, arrival, depature).>]
 				end
 			else
 				let 
 					plan = table(tId),
-					newPlan = plan union {(sId, arrival, depature)} 
+					newPlan = plan ^ <.(sId, arrival, depature).> 
 				in 
 					table !! [tId +> newPlan] 
 				end
@@ -35,12 +35,14 @@ class
 	value /* observers */
 		-- check whether a tram with a given name exists in a given time table
 		isIn : TramId >< TimeTable -> Bool
-		isIn(id, table) is true
+		isIn(id, table) is id isin dom table
 
      -- you can add more observers here
  
   value /* predicates to check time tables */   
 		isWellformed : TimeTable >< Net -> Bool
 		isWellformed(t, n) is true
-          
+       
+       	-- duplicates?
+   		--    
 end  
