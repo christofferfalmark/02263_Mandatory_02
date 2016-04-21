@@ -41,8 +41,41 @@ class
  
   value /* predicates to check time tables */   
 		isWellformed : TimeTable >< Net -> Bool
-		isWellformed(t, n) is true
-       
-       	-- duplicates?
-   		--    
+		isWellformed(table, net) is checkTramTimeTable(table, net) /\ isNotEmpty(table),
+		
+		-- checks that every stop in the time table exists in the tram net
+		checkTramTimeTable: TimeTable >< Net -> Bool
+		checkTramTimeTable(table, net) is
+			let
+				(stops, connection) = net				
+			in
+				(all tramId : TramId :- tramId isin table =>
+					let 
+						stops = table(tramId)
+					in
+						(all (s, dep, arr) : StopId >< Time >< Time :- (s, dep, arr) isin stops =>
+							(exists (s1, s2) : StopId >< StopId :- (s1, s2) isin connection /\
+								(s = s1 \/ s = s2))
+						)
+					end
+				)
+			end,
+		
+		-- checks that the TimeTable doesn't have empty lists
+		isNotEmpty : TimeTable -> Bool
+		isNotEmpty(table) is 
+			(all tramId : TramId :- tramId isin table => 
+				if table(tramId) = <..> then
+					false
+				else
+					true
+				end
+			)
+			
+		-- TODO:
+		-- Time between stops on time table >= minDrivingTime
+		-- Trams using same connection at same time <= capacity
+		-- Trams using same connection, check that the time corresponds to the headway
+		-- Time table has proper connections (e.g. a -> c or a -> a would not be possible)
+
 end  

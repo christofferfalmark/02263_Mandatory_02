@@ -3,32 +3,48 @@ scheme testTIMETABLE =
 extend TIMETABLE with 
 class
   value 
-	tmp : TimeTable = addStop("tram1", "a", 59, 60, 
-							addStop("tram1", "b", 46, 48, 
-								addStop("tram1", "c", 28, 32, 
-									addStop("tram1", "b", 12, 14, 
-										addStop("tram1", "a", 00, 01, 
+	tmp : TimeTable = addStop("tram1", "A", 59, 60, 
+							addStop("tram1", "B", 46, 48, 
+								addStop("tram1", "C", 28, 32, 
+									addStop("tram1", "B", 12, 14, 
+										addStop("tram1", "A", 00, 01, 
 											addTram("tram1", [])
 										)
 									)
 								)
 							)
 						),
-	table : TimeTable = addStop("tram2", "d", 58, 60, 
-							addStop("tram2", "b", 47, 50, 
-								addStop("tram2", "a", 28, 32, 
-									addStop("tram2", "b", 11, 13, 
-										addStop("tram2", "d", 00, 02, 
+	table : TimeTable = addStop("tram2", "D", 58, 60, 
+							addStop("tram2", "B", 47, 50, 
+								addStop("tram2", "A", 28, 32, 
+									addStop("tram2", "B", 11, 13, 
+										addStop("tram2", "D", 00, 02, 
 											addTram("tram2", tmp)
 										)
 									)
 								)
 							)
+						),
+    net : Net = addConnection("B", "C", 4, 3, 12,
+	    			addConnection("A", "B", 2, 3, 10,
+	    				addConnection("B", "D", 4, 2, 7, insertStop(
+	    					"D", 2, insertStop(
+	    						"C", 2, insertStop(
+	    							"B", 3, insertStop(
+	    								"A", 2, empty)
+	    							)
+	    						)
+    						)
 						)
-						
+					)
+				),
+
+	emptyTimeTable : TimeTable = addTram("hat", [])
 	
   test_case
 	[t1] isIn("tram1", table),
 	[t2] isIn("tram2", table),
-	[t3] table
+	[t3] table,
+	[t4] isWellformed(table, net),
+	[t5] isNotEmpty(emptyTimeTable) = false
  end
