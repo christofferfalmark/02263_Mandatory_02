@@ -70,8 +70,24 @@ class
 				else
 					true
 				end
-			)
-			
+			),
+		
+		getTrams : TimeTable >< Net -> Bool
+		getTrams(table, net) is
+			let
+				tram1 = hd dom table,
+				tram2 = hd dom (table \ {tram1})
+			in
+				compareTimes(table(tram1), table(tram2), net)
+			end,
+		
+		compareTimes : TimeSlot-list >< TimeSlot-list >< Net -> Bool
+		compareTimes(tram1, tram2, net) is true
+		
+		
+			--s1 = hd table(hd dom table),
+			--s2 = hd table(hd dom table)
+		
 		-- TODO:
 		-- Time between stops on time table >= minDrivingTime
 		-- Trams using same connection at same time <= capacity

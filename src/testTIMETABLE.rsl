@@ -46,5 +46,6 @@ class
 	[t2] isIn("tram2", table),
 	[t3] table,
 	[t4] isWellformed(table, net),
-	[t5] isNotEmpty(emptyTimeTable) = false
+	[t5] isNotEmpty(emptyTimeTable) = false,
+	[t6] getTrams(table)
  end
