@@ -54,7 +54,7 @@ class
 						stops = table(tramId)
 					in
 						(all (s, dep, arr) : StopId >< Time >< Time :- (s, dep, arr) isin stops =>
-							(exists (s1, s2) : StopId >< StopId :- (s1, s2) isin connection /\
+		z					(exists (s1, s2) : StopId >< StopId :- (s1, s2) isin connection /\
 								(s = s1 \/ s = s2))
 						)
 					end
@@ -83,7 +83,9 @@ class
 		
 		compareTimes : TimeSlot-list >< TimeSlot-list >< Net -> Bool
 		compareTimes(tram1, tram2, net) is true
-		
+		-- check through each tram. 
+		-- Send the departure time on the current entry to the next one, if one exists (or just stop at 60?).
+			-- Subtract it from the departure time there and then check if that time is less than the minimum driving time in Net for that connection. 
 		
 			--s1 = hd table(hd dom table),
 			--s2 = hd table(hd dom table)
