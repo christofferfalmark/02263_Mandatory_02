@@ -76,15 +76,8 @@ class
 		getTrams : TimeTable >< Net -> Bool
 		getTrams(table, net) is
 			(all tram : TramId :- tram isin table => checkMinDrivingTime(table(tram), net)),
-			/*
-			let
-				tram1 = hd dom table,
-				tram2 = hd dom (table \ {tram1})
-			in
-				(table(tram1), net)
-			end,
-			*/
-		-- checks that the 
+
+		-- checks that the time spent between stops upholds the minimum driving time criteria
 		checkMinDrivingTime : TimeSlot-list >< Net -> Bool
 		checkMinDrivingTime(tram1, net) is 
 		if tram1 ~= <..> then
@@ -109,12 +102,68 @@ class
 			 true
 		end,
 		
-		checkForSameConnection : TimeSlot-list >< TimeTable >< Net -> Bool
-		checkForSameConnection(tram1, table, net) is true
-		
+		-- brææææææææææk!
+		getTramsCapacity : TimeTable >< Net -> Bool
+		getTramsCapacity(table, net) is
+			let
+				tram = hd table,
+				(ztop, connection) = net,
+				splat = dom ztop,	-- list of map-keys (i.e. stopId)
+				cap = ztop(hd splat)	-- capacity using stopId key				
+			in
+				(all tramId : TramId :- tramId isin table =>
+					(all slot : TimeSlot :- slot isin table(tramId) => 
+						checkStationCapacity(hd table(tram), table, 0) <= cap
+					)
+				)
+			end,
+			
+		-- get amount of concurrent stops at station
+		checkStationCapacity : TimeSlot >< TimeTable >< Nat -> Nat
+		checkStationCapacity(time, table, count) is
+			if table = [] then
+				count
+			else
+				let 
+					tram = hd table,
+					(s1, a1, d1) = time
+				in
+					if 
+						(all tramId : TramId :- tramId isin table =>
+							(exists (s2, a2, d2) : TimeSlot :- (s2, a2, d2) isin table(tram) /\
+								(s1 = s2 /\ (a1 <= a2 /\ a2 <= d1) /\ (a2 <= d1 /\ d1 <= d2))
+							)
+						) then
+						checkStationCapacity(time, table \ {tram}, count + 1)
+					else
+						checkStationCapacity(time, table \ {tram}, count)
+					end
+				end
+			end
+			
 		-- TODO:
 		-- Trams using same connection at same time <= capacity
 		-- Trams using same connection, check that the time corresponds to the headway
 		-- Time table has proper connections (e.g. a -> c or a -> a would not be possible)
 
 end  
+					/*
+					(all tram : TramId :- tram isin table => 
+						(all (s, a, d) : TimeSlot :- (s, a, d) isin table(tram) =>
+							if s = "B" then
+								let
+									hat = hat + 1
+								in
+									if hat > ztop(s) then
+										false 
+									else 
+										true
+									end
+								end	
+							else
+								hat = hat
+							end
+	
+						)
+					)
+					*/

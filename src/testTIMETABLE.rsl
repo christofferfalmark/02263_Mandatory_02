@@ -14,12 +14,37 @@ class
 								)
 							)
 						),
+						
+	tmp2 : TimeTable = addStop("tram3", "A", 59, 60, 
+							addStop("tram3", "B", 46, 48, 
+								addStop("tram3", "C", 28, 32, 
+									addStop("tram3", "B", 12, 14, 
+										addStop("tram3", "A", 00, 01, 
+											addTram("tram3", tmp)
+										)
+									)
+								)
+							)
+						),
+						
+	tmp3 : TimeTable = addStop("tram4", "A", 59, 60, 
+							addStop("tram4", "B", 46, 48, 
+								addStop("tram4", "C", 28, 32, 
+									addStop("tram4", "B", 12, 14, 
+										addStop("tram4", "A", 00, 01, 
+											addTram("tram4", tmp2)
+										)
+									)
+								)
+							)
+						),
+						
 	table : TimeTable = addStop("tram2", "D", 58, 60, 
 							addStop("tram2", "B", 47, 50, 
 								addStop("tram2", "A", 28, 32, 
 									addStop("tram2", "B", 11, 13, 
 										addStop("tram2", "D", 00, 02, 
-											addTram("tram2", tmp)
+											addTram("tram2", tmp3)
 										)
 									)
 								)
@@ -63,5 +88,9 @@ class
 	[t6] 
 		getTrams(table, net),
 	[t7] 
-		checkMinDrivingTime(splat(hd dom splat), net)
+		checkMinDrivingTime(splat(hd dom splat), net),
+	[t1000]
+		checkStationCapacity(("B", 11, 13), table, 0),
+	[t800]
+		getTramsCapacity(table, net)
  end
