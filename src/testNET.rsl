@@ -3,24 +3,34 @@ scheme testNET =
 extend NET with 
 class
   value 
-    net : Net = addConnection("B", "C", 4, 3, 12,
-	    			addConnection("A", "B", 2, 3, 10,
-	    				addConnection("B", "D", 4, 2, 7, insertStop(
-	    					"D", 2, insertStop(
-	    						"C", 2, insertStop(
-	    							"B", 3, insertStop(
-	    								"A", 2, empty)
-	    							)
-	    						)
+    net : Net = addConnection("B", "C", 4, 12, 3, 
+    				addConnection("A", "B", 2, 10, 3, 
+    					addConnection("B", "D", 4, 7, 2, 
+    						insertStop("D", 2, 
+    							insertStop("C", 2, 
+    								insertStop("B", 3,  
+	    								insertStop("A", 2, empty)
+		    						)
+    							)
     						)
 						)
 					)
 				)
   test_case
-  		[t0] isWellformed(net),
-		[t1] capacity("A", "B", net),
-		[t2] capacity("B", "C", net),
-		[t3] capacity("B", "D", net),
-		[t4] minHeadway("A", "B", net),
-		[t5] minHeadway("B", "C", net)
+  		[netIsWellformed] 
+  			isWellformed(net),
+  		[insertDuplicateStop] 
+  			insertStop("A", 2, net) = net,
+  		[insertNewStopAltersNet] 
+  			insertStop("E", 4, net) ~= net,
+  		[equalCapacityOfBothDirectionsInConnection] 
+  			capacity("A", "B", net) = capacity("B", "A", net),
+  		[equalHeadwayOfBothDirectionsInConnection]
+  			minHeadway("A", "B", net) = minHeadway("B", "A", net), 
+  		[equalDrivingTimeOfBothDirectionsInConnection] 
+  			minDrivingTime("A", "B", net) = minDrivingTime("B", "A", net),
+  		[areDirectlyConnected]
+  			areDirectlyConnected("A", "B", net) = areDirectlyConnected("B", "A", net),
+  		[stopIsInNetwork]
+  			isIn("A", net)
  end
