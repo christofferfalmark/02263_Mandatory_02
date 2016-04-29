@@ -63,5 +63,5 @@ class
 	[t6] 
 		getTrams(table, net),
 	[t7] 
-		compareTimes(splat(hd dom splat), net)
+		checkMinDrivingTime(splat(hd dom splat), net)
  end

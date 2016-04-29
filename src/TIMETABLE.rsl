@@ -72,9 +72,10 @@ class
 				end
 			),
 		
+		-- goes through all trams
 		getTrams : TimeTable >< Net -> Bool
 		getTrams(table, net) is
-			(all tram : TramId :- tram isin table => compareTimes(table(tram), net)),
+			(all tram : TramId :- tram isin table => checkMinDrivingTime(table(tram), net)),
 			/*
 			let
 				tram1 = hd dom table,
@@ -83,8 +84,9 @@ class
 				(table(tram1), net)
 			end,
 			*/
-		compareTimes : TimeSlot-list >< Net -> Bool
-		compareTimes(tram1, net) is 
+		-- checks that the 
+		checkMinDrivingTime : TimeSlot-list >< Net -> Bool
+		checkMinDrivingTime(tram1, net) is 
 		if tram1 ~= <..> then
 			if tl tram1 = <..> then
 				true
@@ -99,22 +101,18 @@ class
 					if dt < drive then
 						false
 					else
-						compareTimes(tl tl tram1, net)
+						checkMinDrivingTime(tl tl tram1, net)
 					end
 				end
 			end
 		else
 			 true
-		end
-		-- check through each tram. 
-		-- Send the departure time on the current entry to the next one, if one exists (or just stop at 60?).
-			-- Subtract it from the departure time there and then check if that time is less than the minimum driving time in Net for that connection. 
+		end,
 		
-			--s1 = hd table(hd dom table),
-			--s2 = hd table(hd dom table)
+		checkForSameConnection : TimeSlot-list >< TimeTable >< Net -> Bool
+		checkForSameConnection(tram1, table, net) is true
 		
 		-- TODO:
-		-- Time between stops on time table >= minDrivingTime
 		-- Trams using same connection at same time <= capacity
 		-- Trams using same connection, check that the time corresponds to the headway
 		-- Time table has proper connections (e.g. a -> c or a -> a would not be possible)
