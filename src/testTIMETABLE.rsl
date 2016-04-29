@@ -27,11 +27,11 @@ class
 						),
     net : Net = addConnection("B", "C", 4, 3, 12,
 	    			addConnection("A", "B", 2, 3, 10,
-	    				addConnection("B", "D", 4, 2, 7, insertStop(
-	    					"D", 2, insertStop(
-	    						"C", 2, insertStop(
-	    							"B", 3, insertStop(
-	    								"A", 2, empty)
+	    				addConnection("B", "D", 4, 2, 7, 
+	    					insertStop("D", 2, 
+	    						insertStop("C", 2, 
+	    							insertStop("B", 3, 
+	    								insertStop("A", 2, empty)
 	    							)
 	    						)
     						)
@@ -41,14 +41,27 @@ class
 
 	emptyTimeTable : TimeTable = addTram("hat", []),
 		 
-	splat : TimeTable = addStop("hat", "B", 10, 20, addStop("hat", "A", 59, 60, addTram("hat", [])))
+	splat : TimeTable = addStop("hat", "C", 28, 32, 
+							addStop("hat", "B", 12, 14, 
+								addStop("hat", "A", 00, 01, 
+									addTram("hat", [])
+								)
+							)
+						)
 	
   test_case
-	[t1] isIn("tram1", table),
-	[t2] isIn("tram2", table),
-	[t3] table, 
-	[t4] isWellformed(table, net),
-	[t5] isNotEmpty(emptyTimeTable) = false,
-	[t6] getTrams(table, net),
-	[t7] compareTimes(splat(hd dom splat), net)
+	[tramIsWellformed] 
+		isWellformed(table, net),
+	[t1] 
+		isIn("tram1", table),
+	[t2] 
+		isIn("tram2", table),
+	[t3] 
+		table, 
+	[t5] 
+		isNotEmpty(emptyTimeTable) = false,
+	[t6] 
+		getTrams(table, net),
+	[t7] 
+		compareTimes(splat(hd dom splat), net)
  end

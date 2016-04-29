@@ -41,7 +41,7 @@ class
  
   value /* predicates to check time tables */   
 		isWellformed : TimeTable >< Net -> Bool
-		isWellformed(table, net) is checkTramTimeTable(table, net) /\ isNotEmpty(table),
+		isWellformed(table, net) is checkTramTimeTable(table, net) /\ isNotEmpty(table) /\ getTrams(table, net),
 		
 		-- checks that every stop in the time table exists in the tram net
 		checkTramTimeTable: TimeTable >< Net -> Bool
@@ -74,33 +74,38 @@ class
 		
 		getTrams : TimeTable >< Net -> Bool
 		getTrams(table, net) is
+			(all tram : TramId :- tram isin table => compareTimes(table(tram), net)),
+			/*
 			let
 				tram1 = hd dom table,
 				tram2 = hd dom (table \ {tram1})
 			in
-				compareTimes(table(tram1), net)
+				(table(tram1), net)
 			end,
-		
+			*/
 		compareTimes : TimeSlot-list >< Net -> Bool
 		compareTimes(tram1, net) is 
-		if tl tram1 = <..> then
-			true
-		else
-			let
-				(id1, arr1, dep1) = hd tram1,
-				(id2, arr2, dep2) = hd tl tram1,
-				(ztop, connection) = net,
-				(head, cap, drive) = connection(id1, id2),
-				dt = arr2 - dep1
-			in
-				if dt < drive then
-					false
-				else
-					compareTimes(tl tl tram1, net)
+		if tram1 ~= <..> then
+			if tl tram1 = <..> then
+				true
+			else
+				let
+					(id1, arr1, dep1) = hd tram1,
+					(id2, arr2, dep2) = hd tl tram1,
+					(ztop, connection) = net,
+					(head, cap, drive) = connection(id1, id2),
+					dt = arr2 - dep1
+				in
+					if dt < drive then
+						false
+					else
+						compareTimes(tl tl tram1, net)
+					end
 				end
 			end
+		else
+			 true
 		end
-		
 		-- check through each tram. 
 		-- Send the departure time on the current entry to the next one, if one exists (or just stop at 60?).
 			-- Subtract it from the departure time there and then check if that time is less than the minimum driving time in Net for that connection. 

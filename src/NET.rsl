@@ -20,7 +20,7 @@ class
     -- add a connection between given stops, 
     -- with the given capacity, minimum driving time and minimum headway
     addConnection : StopId >< StopId >< Headway >< Capacity >< DrivingTime >< Net -> Net
-    addConnection(s1, s2, h, c, d, (stops, connections)) is (stops, connections !! [(s1, s2) +> (h, d, c)] !! [(s2, s1) +> (h, d, c)])
+    addConnection(s1, s2, h, c, d, (stops, connections)) is (stops, connections !! [(s1, s2) +> (h, c, d)] !! [(s2, s1) +> (h, c, d)])
     		
   value /* observers */
     -- check whether a stop is in a network     
