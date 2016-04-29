@@ -54,7 +54,7 @@ class
 						stops = table(tramId)
 					in
 						(all (s, dep, arr) : StopId >< Time >< Time :- (s, dep, arr) isin stops =>
-		z					(exists (s1, s2) : StopId >< StopId :- (s1, s2) isin connection /\
+							(exists (s1, s2) : StopId >< StopId :- (s1, s2) isin connection /\
 								(s = s1 \/ s = s2))
 						)
 					end
@@ -78,11 +78,29 @@ class
 				tram1 = hd dom table,
 				tram2 = hd dom (table \ {tram1})
 			in
-				compareTimes(table(tram1), table(tram2), net)
+				compareTimes(table(tram1), net)
 			end,
 		
-		compareTimes : TimeSlot-list >< TimeSlot-list >< Net -> Bool
-		compareTimes(tram1, tram2, net) is true
+		compareTimes : TimeSlot-list >< Net -> Bool
+		compareTimes(tram1, net) is 
+		if tl tram1 = <..> then
+			true
+		else
+			let
+				(id1, arr1, dep1) = hd tram1,
+				(id2, arr2, dep2) = hd tl tram1,
+				(ztop, connection) = net,
+				(head, cap, drive) = connection(id1, id2),
+				dt = arr2 - dep1
+			in
+				if dt < drive then
+					false
+				else
+					compareTimes(tl tl tram1, net)
+				end
+			end
+		end
+		
 		-- check through each tram. 
 		-- Send the departure time on the current entry to the next one, if one exists (or just stop at 60?).
 			-- Subtract it from the departure time there and then check if that time is less than the minimum driving time in Net for that connection. 

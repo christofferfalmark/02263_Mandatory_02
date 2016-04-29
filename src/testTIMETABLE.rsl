@@ -39,13 +39,16 @@ class
 					)
 				),
 
-	emptyTimeTable : TimeTable = addTram("hat", [])
+	emptyTimeTable : TimeTable = addTram("hat", []),
+		 
+	splat : TimeTable = addStop("hat", "B", 10, 20, addStop("hat", "A", 59, 60, addTram("hat", [])))
 	
   test_case
 	[t1] isIn("tram1", table),
 	[t2] isIn("tram2", table),
-	[t3] table,
+	[t3] table, 
 	[t4] isWellformed(table, net),
 	[t5] isNotEmpty(emptyTimeTable) = false,
-	[t6] getTrams(table)
+	[t6] getTrams(table, net),
+	[t7] compareTimes(splat(hd dom splat), net)
  end
