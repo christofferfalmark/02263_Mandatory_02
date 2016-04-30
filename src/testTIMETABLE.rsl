@@ -14,7 +14,7 @@ class
 								)
 							)
 						),
-						
+	/*					
 	tmp2 : TimeTable = addStop("tram3", "A", 59, 60, 
 							addStop("tram3", "B", 46, 48, 
 								addStop("tram3", "C", 28, 32, 
@@ -38,13 +38,13 @@ class
 								)
 							)
 						),
-						
+	*/					
 	table : TimeTable = addStop("tram2", "D", 58, 60, 
 							addStop("tram2", "B", 47, 50, 
 								addStop("tram2", "A", 28, 32, 
 									addStop("tram2", "B", 11, 13, 
 										addStop("tram2", "D", 00, 02, 
-											addTram("tram2", tmp3)
+											addTram("tram2", tmp)
 										)
 									)
 								)

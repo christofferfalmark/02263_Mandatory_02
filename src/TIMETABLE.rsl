@@ -41,7 +41,8 @@ class
  
   value /* predicates to check time tables */   
 		isWellformed : TimeTable >< Net -> Bool
-		isWellformed(table, net) is checkTramTimeTable(table, net) /\ isNotEmpty(table) /\ getTrams(table, net),
+		isWellformed(table, net) is checkTramTimeTable(table, net) /\ isNotEmpty(table) 
+			/\ getTrams(table, net) /\ getTramsCapacity(table, net),
 		
 		-- checks that every stop in the time table exists in the tram net
 		checkTramTimeTable: TimeTable >< Net -> Bool
@@ -75,45 +76,79 @@ class
 		-- goes through all trams
 		getTrams : TimeTable >< Net -> Bool
 		getTrams(table, net) is
-			(all tram : TramId :- tram isin table => checkMinDrivingTime(table(tram), net)),
+			(all tram : TramId :- tram isin table => checkMinDrivingTime(table(tram), net)) ,
 
 		-- checks that the time spent between stops upholds the minimum driving time criteria
 		checkMinDrivingTime : TimeSlot-list >< Net -> Bool
 		checkMinDrivingTime(tram1, net) is 
-		if tram1 ~= <..> then
-			if tl tram1 = <..> then
-				true
-			else
-				let
-					(id1, arr1, dep1) = hd tram1,
-					(id2, arr2, dep2) = hd tl tram1,
-					(ztop, connection) = net,
-					(head, cap, drive) = connection(id1, id2),
-					dt = arr2 - dep1
-				in
-					if dt < drive then
-						false
-					else
-						checkMinDrivingTime(tl tl tram1, net)
-					end
+		if len tram1 < 2 then
+			true
+		else
+			let
+				((id1, arr1, dep1), (id2, arr2, dep2), tram1) = getTwoStopsFromTram(tram1),
+				(ztop, connection) = net,
+				(head, cap, drive) = connection(id1, id2),
+				dt = arr2 - dep1
+			in
+				if dt < drive then
+					false
+				else
+					checkMinDrivingTime(tram1, net)
 				end
 			end
-		else
-			 true
 		end,
-		
+
+		getTwoStopsFromTram : TimeSlot-list -> (TimeSlot >< TimeSlot >< TimeSlot-list)
+		getTwoStopsFromTram(tram1) is 
+			let
+				slot1 = hd tram1,
+				slot2 = hd tl tram1
+			in
+				(slot1, slot2, (tl tram1))
+			end,
+
+		-- get amount of concurrent stops at station
+		checkConnectionCapacity : TimeSlot >< TimeSlot >< TimeTable >< Net >< Nat -> Nat
+		checkConnectionCapacity(time1, time2, table, net, count) is
+			if table = [] then
+				count
+			else
+				let 
+					tram = hd table,
+					(s1, a1, d1) = time1,
+					(s2, a2, d2) = time2,
+					(ztops, connection) = net,
+					(head, cap, drive) = connection(s1, s2)
+					
+				in
+					if 
+						(all tramId : TramId :- tramId isin table =>
+							(exists ((s3, a3, d3), (s4, a4, d4)) : TimeSlot >< TimeSlot :- (s3, a3, d3) isin table(tram) /\ (s4, a4, d4) isin table(tram)
+								/\ areDirectlyConnected(s1, s2, net) /\ areDirectlyConnected(s3, s4, net) /\ (abs(d1 - d3) >= head) /\
+								((a3 <= a2 /\ a2 <= a4) /\ (d1 <= d3 /\ d3 <= a2))
+							)
+						) then
+						checkConnectionCapacity(time1, time2, table \ {tram}, net, count + 1)
+					else
+						checkConnectionCapacity(time1, time2, table \ {tram}, net, count)
+					end
+				end
+			end,
+
 		-- brææææææææææk!
 		getTramsCapacity : TimeTable >< Net -> Bool
 		getTramsCapacity(table, net) is
 			let
 				tram = hd table,
-				(ztop, connection) = net,
-				splat = dom ztop,	-- list of map-keys (i.e. stopId)
-				cap = ztop(hd splat)	-- capacity using stopId key				
+				(ztop, connection) = net
 			in
 				(all tramId : TramId :- tramId isin table =>
 					(all slot : TimeSlot :- slot isin table(tramId) => 
-						checkStationCapacity(hd table(tram), table, 0) <= cap
+						(let 
+							(s, a, d) = hd table(tram)
+						in
+							checkStationCapacity((s, a, d), table, 0) <= ztop(s)
+						end)
 					)
 				)
 			end,
@@ -144,26 +179,5 @@ class
 		-- TODO:
 		-- Trams using same connection at same time <= capacity
 		-- Trams using same connection, check that the time corresponds to the headway
-		-- Time table has proper connections (e.g. a -> c or a -> a would not be possible)
 
 end  
-					/*
-					(all tram : TramId :- tram isin table => 
-						(all (s, a, d) : TimeSlot :- (s, a, d) isin table(tram) =>
-							if s = "B" then
-								let
-									hat = hat + 1
-								in
-									if hat > ztop(s) then
-										false 
-									else 
-										true
-									end
-								end	
-							else
-								hat = hat
-							end
-	
-						)
-					)
-					*/
