@@ -96,11 +96,9 @@ class
 		else
 			let
 				((id1, arr1, dep1), (id2, arr2, dep2)) = getTwoStopsFromTram(tram1),
-				(ztop, connection) = net,
-				(head, cap, drive) = connection(id1, id2),
 				dt = arr2 - dep1
 			in
-				if dt < drive then
+				if dt < minDrivingTime(id1, id2, net) then
 					false
 				else
 					checkMinDrivingTime(tl tram1, net)
@@ -115,15 +113,16 @@ class
 			true
 		else
 			let
-				((id1, arr1, dep1), (id2, arr2, dep2)) = getTwoStopsFromTram(tram),
-				
-				(ztop, connection) = net,
-				(head, cap, drive) = connection(id1, id2)
+				((id1, arr1, dep1), (id2, arr2, dep2)) = getTwoStopsFromTram(tram)
 			in
-				if checkConnectionCapacity((id1, arr1, dep1), (id2, arr2, dep2), table, net, 0) > cap then
+				if checkConnectionCapacity((id1, arr1, dep1), (id2, arr2, dep2), table, net, 0) > capacity(id1, id2, net) then
 					false
 				else
-					true
+					if checkConnectionHeadway((id1, arr1, dep1), (id2, arr2, dep2), table, net) then 
+						true
+					else
+						false
+					end
 				end
 			end
 		end,
@@ -137,17 +136,14 @@ class
 				let 
 					tram = hd table,
 					(s1, a1, d1) = time1,
-					(s2, a2, d2) = time2,
-					(ztops, connection) = net,
-					(head, cap, drive) = connection(s1, s2)
-					
+					(s2, a2, d2) = time2
 				in
 					if 
 						(all tramId : TramId :- tramId isin table =>
 							(exists (s3, a3, d3) : TimeSlot :- (s3, a3, d3) isin table(tramId) /\
 								(exists (s4, a4, d4) : TimeSlot :- (s4, a4, d4) isin table(tramId) 
 									/\ areDirectlyConnected(s1, s2, net) /\ areDirectlyConnected(s3, s4, net)
-									/\ (s1 = s3 /\ s2 = s4) /\ ((a3 <= a2 /\ a2 <= a4) /\ (d1 <= d3 /\ d3 <= a2)) -- /\ (abs(d1 - d3) >= head)
+									/\ (s1 = s3 /\ s2 = s4) /\ ((a3 <= a2 /\ a2 <= a4) /\ (d1 <= d3 /\ d3 <= a2))
 								)
 							)
 						) then
@@ -158,19 +154,42 @@ class
 				end
 			end,
 
+		checkConnectionHeadway : TimeSlot >< TimeSlot >< TimeTable >< Net -> Bool
+		checkConnectionHeadway(time1, time2, table, net) is
+			if table = [] then
+				true
+			else
+				let 
+					tram = hd table,
+					--table = table \ {tram},
+					(s1, a1, d1) = time1,
+					(s2, a2, d2) = time2
+				in
+					if
+						(all tramId : TramId :- tramId isin table \ {tram} =>
+							(all (s3, a3, d3) : TimeSlot :- (s3, a3, d3) isin table(tramId) => 
+								(abs(d1 - d3) >= minHeadway(s1, s2, net))
+							)
+						) then
+						checkConnectionHeadway(time1, time2, table \ {tram}, net)
+					else
+						false
+					end
+				end
+			end,
+
 		-- brææææææææææk!
 		checkStationCapacity : TimeTable >< Net -> Bool
 		checkStationCapacity(table, net) is
 			let
-				tram = hd table,
-				(ztop, connection) = net
+				tram = hd table
 			in
 				(all tramId : TramId :- tramId isin table =>
 					(all slot : TimeSlot :- slot isin table(tramId) => 
 						(let 
 							(s, a, d) = hd table(tram)
 						in
-							countStationOccupation((s, a, d), table, 0) <= ztop(s)
+							countStationOccupation((s, a, d), table, 0) <= capacity(s, net)
 						end)
 					)
 				)

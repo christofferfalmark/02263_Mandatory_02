@@ -56,7 +56,7 @@ class
 								addStop("tram2", "A", 28, 32, 
 									addStop("tram2", "B", 11, 13, 
 										addStop("tram2", "D", 00, 02, 
-											addTram("tram2", tmp4)
+											addTram("tram2", tmp)
 										)
 									)
 								)
@@ -89,8 +89,12 @@ class
   test_case
 	[tramIsWellformed] 
 		isWellformed(table, net),
+		
 	[checkConnectionCapacity]
-		checkConnectionCapacity(("A", 00, 01), ("B", 12, 14), table, net, 0),
+		checkConnectionCapacity(("A", 00, 01), ("B", 12, 14), table, net, 1),
+		
+	[checkConnectionHeadway]
+		checkConnectionHeadway(("A", 00, 01), ("B", 12, 14), table, net),
 	[t1] 
 		isIn("tram1", table),
 	[t2] 
