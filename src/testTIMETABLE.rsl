@@ -14,7 +14,7 @@ class
 								)
 							)
 						),
-	/*					
+						
 	tmp2 : TimeTable = addStop("tram3", "A", 59, 60, 
 							addStop("tram3", "B", 46, 48, 
 								addStop("tram3", "C", 28, 32, 
@@ -38,13 +38,25 @@ class
 								)
 							)
 						),
-	*/					
+						
+	tmp4 : TimeTable = addStop("tram5", "A", 59, 60, 
+							addStop("tram5", "B", 46, 48, 
+								addStop("tram5", "C", 28, 32, 
+									addStop("tram5", "B", 12, 14, 
+										addStop("tram5", "A", 00, 01, 
+											addTram("tram5", tmp3)
+										)
+									)
+								)
+							)
+						),
+						
 	table : TimeTable = addStop("tram2", "D", 58, 60, 
 							addStop("tram2", "B", 47, 50, 
 								addStop("tram2", "A", 28, 32, 
 									addStop("tram2", "B", 11, 13, 
 										addStop("tram2", "D", 00, 02, 
-											addTram("tram2", tmp)
+											addTram("tram2", tmp4)
 										)
 									)
 								)
@@ -77,6 +89,8 @@ class
   test_case
 	[tramIsWellformed] 
 		isWellformed(table, net),
+	[checkConnectionCapacity]
+		checkConnectionCapacity(("A", 00, 01), ("B", 12, 14), table, net, 0),
 	[t1] 
 		isIn("tram1", table),
 	[t2] 
@@ -90,7 +104,7 @@ class
 	[t7] 
 		checkMinDrivingTime(splat(hd dom splat), net),
 	[t1000]
-		checkStationCapacity(("B", 11, 13), table, 0),
+		countStationOccupation(("B", 11, 13), table, 0),
 	[t800]
-		getTramsCapacity(table, net)
+		checkStationCapacity(table, net)
  end
