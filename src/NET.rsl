@@ -15,7 +15,7 @@ class
 
     -- insert a stop with a given name and capacity 
     insertStop : StopId >< Capacity >< Net -> Net
-    insertStop(sId, cap, (stops, connections)) is (stops !! [sId +> cap], connections),
+    insertStop(stopId, capacity, (stops, connections)) is (stops !! [stopId +> capacity], connections),
 
     -- add a connection between given stops, 
     -- with the given capacity, minimum driving time and minimum headway
@@ -45,7 +45,7 @@ class
  
     -- get the capacity of a stop 
     capacity : StopId >< Net -~-> Capacity
-    capacity(s, (stops, connections)) is stops(s)
+    capacity(stopId, (stops, connections)) is stops(stopId)
 
   value /* predicates to check nets */
     isWellformed : Net -> Bool
@@ -56,8 +56,8 @@ class
     checkConnectionsAreValid : Net -> Bool
     checkConnectionsAreValid(net) is
     let (stops, conn) = net in 
-    	(all (s1, s2) : StopId >< StopId :- (s1, s2) isin conn => 
-    		(exists (s3, s4) : StopId >< StopId :- (s3, s4) isin conn /\
+    	(all (s1, s2) : StopId >< StopId :- (s1, s2) isin dom conn => 
+    		(exists (s3, s4) : StopId >< StopId :- (s3, s4) isin dom conn /\
     			(s1 = s4 /\ s2 = s3 /\ conn(s1, s2) = conn(s3, s4))
 			)
 		)
