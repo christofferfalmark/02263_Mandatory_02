@@ -33,15 +33,15 @@ class
     
     -- get minimum driving time between two connected stops        
     minHeadway : StopId >< StopId >< Net -~-> Headway
-    minHeadway(s1, s2, (stops, connections)) is let (headway, drivingtime, capacity) = connections(s1, s2) in headway end, 
+    minHeadway(s1, s2, (stops, connections)) is let (headway, capacity, drivingtime) = connections(s1, s2) in headway end, 
 
     -- get minimum driving time between two connected stops        
     minDrivingTime : StopId >< StopId >< Net -~-> DrivingTime
-    minDrivingTime(s1, s2, (stops, connections)) is let (headway, drivingtime, capacity) = connections(s1, s2) in drivingtime end, 
+    minDrivingTime(s1, s2, (stops, connections)) is let (headway, capacity, drivingtime) = connections(s1, s2) in drivingtime end, 
 
     -- get the capacity for a connection between two connected stops
     capacity : StopId >< StopId >< Net -~-> Capacity
-    capacity(s1, s2, (stops, connections)) is let (headway, drivingtime, capacity) = connections(s1,s2) in capacity end,
+    capacity(s1, s2, (stops, connections)) is let (headway, capacity, drivingtime) = connections(s1,s2) in capacity end,
  
     -- get the capacity of a stop 
     capacity : StopId >< Net -~-> Capacity

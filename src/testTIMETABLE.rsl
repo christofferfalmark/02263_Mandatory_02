@@ -3,112 +3,71 @@ scheme testTIMETABLE =
 extend TIMETABLE with 
 class
   value 
-	tmp : TimeTable = addStop("tram1", "A", 59, 60, 
-							addStop("tram1", "B", 46, 48, 
-								addStop("tram1", "C", 28, 32, 
-									addStop("tram1", "B", 12, 14, 
-										addStop("tram1", "A", 00, 01, 
-											addTram("tram1", [])
-										)
-									)
-								)
-							)
-						),
-						
-	tmp2 : TimeTable = addStop("tram3", "A", 59, 60, 
-							addStop("tram3", "B", 46, 48, 
-								addStop("tram3", "C", 28, 32, 
-									addStop("tram3", "B", 12, 14, 
-										addStop("tram3", "A", 00, 01, 
-											addTram("tram3", tmp)
-										)
-									)
-								)
-							)
-						),
-						
-	tmp3 : TimeTable = addStop("tram4", "A", 59, 60, 
-							addStop("tram4", "B", 46, 48, 
-								addStop("tram4", "C", 28, 32, 
-									addStop("tram4", "B", 12, 14, 
-										addStop("tram4", "A", 00, 01, 
-											addTram("tram4", tmp2)
-										)
-									)
-								)
-							)
-						),
-						
-	tmp4 : TimeTable = addStop("tram5", "A", 59, 60, 
-							addStop("tram5", "B", 46, 48, 
-								addStop("tram5", "C", 28, 32, 
-									addStop("tram5", "B", 12, 14, 
-										addStop("tram5", "A", 00, 01, 
-											addTram("tram5", tmp3)
-										)
-									)
-								)
-							)
-						),
-						
-	table : TimeTable = addStop("tram2", "D", 58, 60, 
-							addStop("tram2", "B", 47, 50, 
-								addStop("tram2", "A", 28, 32, 
-									addStop("tram2", "B", 11, 13, 
-										addStop("tram2", "D", 00, 02, 
-											addTram("tram2", tmp)
-										)
-									)
-								)
-							)
-						),
-    net : Net = addConnection("B", "C", 4, 3, 12,
-	    			addConnection("A", "B", 2, 3, 10,
-	    				addConnection("B", "D", 4, 2, 7, 
-	    					insertStop("D", 2, 
-	    						insertStop("C", 2, 
-	    							insertStop("B", 3, 
-	    								insertStop("A", 2, empty)
-	    							)
-	    						)
-    						)
-						)
-					)
-				),
-
-	emptyTimeTable : TimeTable = addTram("hat", []),
-		 
-	splat : TimeTable = addStop("hat", "C", 28, 32, 
-							addStop("hat", "B", 12, 14, 
-								addStop("hat", "A", 00, 01, 
-									addTram("hat", [])
-								)
-							)
-						)
+	net : Net = 	addConnection("B", "C", 4, 3, 12,
+    				addConnection("A", "B", 2, 3, 10,
+    				addConnection("B", "D", 4, 2, 7, 
+    				insertStop("D", 2, 
+    				insertStop("C", 2, 
+    				insertStop("B", 3, 
+    				insertStop("A", 2, empty))))))),
 	
-  test_case
-	[tramIsWellformed] 
-		isWellformed(table, net),
+	tableHeadwayFailure : TimeTable = 	
+						addStop("tram2", "B", 15, 19, 
+						addStop("tram2", "C", 00, 04, 
+						addStop("tram1", "B", 13, 15,
+						addStop("tram1", "C", 00, 01, 
+						addTram("tram2", 
+						addTram("tram1", [])))))),
+							 
+	tableDrivingTimeFailure : TimeTable = 	addStop("tram1", "B", 11, 15,
+											addStop("tram1", "C", 00, 01, 
+											addTram("tram1", []))),
+										
+	tableStationCapacityFailure : TimeTable = 	addStop("tram1", "A", 00, 01, 
+												addStop("tram2", "A", 00, 04, 
+												addStop("tram3", "A", 00, 08,
+												addTram("tram3", 
+												addTram("tram2",
+												addTram("tram1", [])))))),
+	
+	wellformedTable : TimeTable =	addStop("tram2", "D", 58, 60, 
+								addStop("tram2", "B", 47, 50, 
+								addStop("tram2", "A", 28, 32, 
+								addStop("tram2", "B", 11, 13, 
+								addStop("tram2", "D", 00, 02, 
+								addStop("tram1", "A", 59, 60, 
+								addStop("tram1", "B", 46, 48, 
+								addStop("tram1", "C", 28, 32, 
+								addStop("tram1", "B", 12, 14, 
+								addStop("tram1", "A", 00, 01, 
+								addTram("tram2", 
+								addTram("tram1", []))))))))))))
+	test_case
+  	[TimeTable] wellformedTable,
+  	
+	[tramIsWellformed] isWellformed(wellformedTable, net),
+	
+	[checkConnectionCapacity] checkConnectionCapacity(("A", 00, 01), ("B", 12, 14), wellformedTable, net, 1) <= capacity("A", "B", net),
+
+	[Tram1IsInTimeTable] isIn("tram1", wellformedTable),
+	
+	[TramIsNotInTimeTable] isIn("tram42", wellformedTable) = false,
+	
+	[TimetableNotEmpty] isNotEmpty(wellformedTable),
 		
-	[checkConnectionCapacity]
-		checkConnectionCapacity(("A", 00, 01), ("B", 12, 14), table, net, 1),
+	[getTramsSucces] getTrams(wellformedTable, net),
 		
-	[checkConnectionHeadway]
-		checkConnectionHeadway(("A", 00, 01), ("B", 12, 14), table, net),
-	[t1] 
-		isIn("tram1", table),
-	[t2] 
-		isIn("tram2", table),
-	[t3] 
-		table, 
-	[t5] 
-		isNotEmpty(emptyTimeTable) = false,
-	[t6] 
-		getTrams(table, net),
-	[t7] 
-		checkMinDrivingTime(splat(hd dom splat), net),
-	[t1000]
-		countStationOccupation(("B", 11, 13), table, 0),
-	[t800]
-		checkStationCapacity(table, net)
+	[getTramsFailure] getTrams(tableHeadwayFailure, net) = false,
+		
+	[connectionHeadwaySuccess] checkConnectionHeadway(("A", 00, 01), ("B", 12, 14), wellformedTable \ {"tram1"}, net, 0) <= minHeadway("A", "B", net),
+	
+	[connectionHeadwayFailure] checkConnectionHeadway(("C", 00, 01),("B", 13, 15), tableHeadwayFailure \ {"tram1"}, net, 0) = 0,
+	
+	[minDrivingTimeCheckSuccess] checkMinDrivingTime(wellformedTable("tram1"), net),
+		
+	[minDrivingTimeCheckFailure] checkMinDrivingTime(tableDrivingTimeFailure("tram1"), net) = false,
+		
+	[TestStationCapacitySucces] checkStationCapacity(wellformedTable, net),
+		
+	[TestStationCapacityFailure] checkStationCapacity(tableStationCapacityFailure, net) = false
  end

@@ -4,9 +4,9 @@ extend NET with
 class
   value 
   	stops : StopId-set = {"A", "B", "C", "D"},
-    net : Net = addConnection("B", "C", 4, 12, 3, 
-    				addConnection("A", "B", 2, 10, 3, 
-    					addConnection("B", "D", 4, 7, 2, 
+    net : Net = addConnection("B", "C", 4, 3, 12, 
+    				addConnection("A", "B", 2, 3, 10,  
+    					addConnection("B", "D", 4, 2, 7, 
     						insertStop("D", 2, 
     							insertStop("C", 2, 
     								insertStop("B", 3,  
