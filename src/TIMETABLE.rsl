@@ -177,7 +177,7 @@ class
 					end
 				end
 			end,
-
+--aslkdlaksjdlkajsdlkjasd
 		-- brææææææææææk!
 		checkStationCapacity : TimeTable >< Net -> Bool
 		checkStationCapacity(table, net) is
