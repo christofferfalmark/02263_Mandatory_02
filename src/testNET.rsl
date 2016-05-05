@@ -3,6 +3,7 @@ scheme testNET =
 extend NET with 
 class
   value 
+  	stops : StopId-set = {"A", "B", "C", "D"},
     net : Net = addConnection("B", "C", 4, 12, 3, 
     				addConnection("A", "B", 2, 10, 3, 
     					addConnection("B", "D", 4, 7, 2, 
@@ -31,6 +32,8 @@ class
   			minDrivingTime("A", "B", net) = minDrivingTime("B", "A", net),
   		[areDirectlyConnected]
   			areDirectlyConnected("A", "B", net) = areDirectlyConnected("B", "A", net),
+  		[areDirectlyConnectedWithStopsThatAreNotConnected]
+  			areDirectlyConnected("A", "C", net) = false,
   		[stopIsInNetwork]
-  			isIn("A", net)
+  			(all s1 : StopId :- s1 isin stops => isIn(s1, net))
  end
