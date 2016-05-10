@@ -12,12 +12,23 @@ class
     				insertStop("A", 2, empty))))))),
 	
 	tableHeadwayFailure : TimeTable = 	
-						addStop("tram2", "B", 15, 19, 
+						addStop("tram2", "B", 15, 18, 
 						addStop("tram2", "C", 00, 04, 
 						addStop("tram1", "B", 13, 15,
 						addStop("tram1", "C", 00, 01, 
 						addTram("tram2", 
 						addTram("tram1", [])))))),
+						
+	tableConnectionCapacityFailure : TimeTable = 	
+						addStop("tram3", "D", 08, 10, 
+						addStop("tram3", "B", 00, 01, 
+						addStop("tram2", "D", 08, 10, 
+						addStop("tram2", "B", 00, 01, 
+						addStop("tram1", "D", 08, 10,
+						addStop("tram1", "B", 00, 01, 
+						addTram("tram3",
+						addTram("tram2", 
+						addTram("tram1", []))))))))),						
 							 
 	tableDrivingTimeFailure : TimeTable = 	addStop("tram1", "B", 11, 15,
 											addStop("tram1", "C", 00, 01, 
@@ -41,33 +52,68 @@ class
 								addStop("tram1", "B", 12, 14, 
 								addStop("tram1", "A", 00, 01, 
 								addTram("tram2", 
-								addTram("tram1", []))))))))))))
+								addTram("tram1", [])))))))))))),
+								
+	illformedTable : TimeTable =	addStop("tram2", "D", 58, 61, 
+								addStop("tram2", "B", 47, 50, 
+								addStop("tram2", "A", 28, 32, 
+								addStop("tram2", "B", 11, 13, 
+								addStop("tram2", "D", 00, 02, 
+								addStop("tram1", "A", 59, 60, 
+								addStop("tram1", "B", 46, 48, 
+								addStop("tram1", "C", 28, 32, 
+								addStop("tram1", "B", 12, 14, 
+								addStop("tram1", "A", 00, 01, 
+								addTram("tram2", 
+								addTram("tram1", []))))))))))))								
 	test_case
+	-- prints the table we use to test for well-formedness.
   	[TimeTable] wellformedTable,
-  	
-	[tramIsWellformed] isWellformed(wellformedTable, net),
 	
-	[checkConnectionCapacity] checkConnectionCapacity(("A", 00, 01), ("B", 12, 14), wellformedTable, net, 1) <= capacity("A", "B", net),
+	-- test whether the table is wellformed
+	[TimeTableIsWellformed] isWellformed(wellformedTable, net),
+	
+	-- test whether an illformed table is wellformed
+  	[TimeTableIsNotWellformed] isWellformed(illformedTable, net) = false,
+	
+	-- check that the arrival and departure times of the wellformed table does not exceed 60.
+	[checkArrivalAndDepartureTimesSucces] (checkArrAndDepTimes(wellformedTable, 0) = 0),
+	
+	-- check that there is an arrival or depature time of the illformed table that exceeds 60
+	[checkArrivalAndDepartureTimesFailure] (checkArrAndDepTimes(illformedTable,0) = 0) = false,
+	
+	-- check that the connection capacity between stop A and B is not violated in the wellformed table
+	[checkConnectionCapacitySucces] checkConnectionCapacity(("A", 00, 01), ("B", 12, 14), wellformedTable, net, 1) <= capacity("A", "B", net),
+	
+	-- check that the connection capacity between stop B and D is violated in an illformed table
+	[testCheckConnectionCapacityFailure] (checkConnectionCapacity(("B", 00, 01), ("D", 08, 10), tableConnectionCapacityFailure, net, 1)) > capacity("B", "D", net),
 
-	[Tram1IsInTimeTable] isIn("tram1", wellformedTable),
+	-- test that tram1 is in the time table
+	[testTramIsInTimeTable] isIn("tram1", wellformedTable),
 	
-	[TramIsNotInTimeTable] isIn("tram42", wellformedTable) = false,
+	-- test that tram42 is NOT in the time table
+	[testTramIsNotInTimeTable] isIn("tram42", wellformedTable) = false,
 	
-	[TimetableNotEmpty] isNotEmpty(wellformedTable),
+	-- test that the time table is not empty
+	[testTimetableNotEmpty] isNotEmpty(wellformedTable),
 		
-	[getTramsSucces] getTrams(wellformedTable, net),
+	-- test that the trams can be validated by iterating through all trams and checking that headway is not violated 
+	[testValidateTrams] validateTrams(wellformedTable, net),
 		
-	[getTramsFailure] getTrams(tableHeadwayFailure, net) = false,
+	[testValidateTramsFailure] validateTrams(tableHeadwayFailure, net) = false,
 		
-	[connectionHeadwaySuccess] checkConnectionHeadway(("A", 00, 01), ("B", 12, 14), wellformedTable \ {"tram1"}, net, 0) <= minHeadway("A", "B", net),
+	-- test that the headway of the connection between A and B is not violated
+	[testConnectionHeadwaySuccess] checkConnectionHeadway(("A", 00, 01), ("B", 12, 14), wellformedTable \ {"tram1"}, net, 0) = 0,
 	
-	[connectionHeadwayFailure] checkConnectionHeadway(("C", 00, 01),("B", 13, 15), tableHeadwayFailure \ {"tram1"}, net, 0) = 0,
+	[testConnectionHeadwayFailure] checkConnectionHeadway(("C", 00, 01),("B", 13, 15), tableHeadwayFailure \ {"tram1"}, net, 0) > 0,
 	
-	[minDrivingTimeCheckSuccess] checkMinDrivingTime(wellformedTable("tram1"), net),
+	-- test that the minimum driving time is not violated in the wellformed table
+	[testMinDrivingTimeCheckSuccess] checkMinDrivingTime(wellformedTable("tram1"), net),
 		
-	[minDrivingTimeCheckFailure] checkMinDrivingTime(tableDrivingTimeFailure("tram1"), net) = false,
+	[testMinDrivingTimeCheckFailure] checkMinDrivingTime(tableDrivingTimeFailure("tram1"), net) = false,
 		
-	[TestStationCapacitySucces] checkStationCapacity(wellformedTable, net),
+	-- test that the capacity of each station is not violated in the wellformed table 
+	[testStationCapacitySucces] checkStationCapacity(wellformedTable, net),
 		
-	[TestStationCapacityFailure] checkStationCapacity(tableStationCapacityFailure, net) = false
+	[testStationCapacityFailure] checkStationCapacity(tableStationCapacityFailure, net) = false
  end

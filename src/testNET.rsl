@@ -18,22 +18,36 @@ class
 					)
 				)
   test_case
-  		[netIsWellformed] 
-  			isWellformed(net),
-  		[insertDuplicateStop] 
-  			insertStop("A", 2, net) = net,
-  		[insertNewStopAltersNet] 
-  			insertStop("E", 4, net) ~= net,
-  		[equalCapacityOfBothDirectionsInConnection] 
-  			capacity("A", "B", net) = capacity("B", "A", net),
-  		[equalHeadwayOfBothDirectionsInConnection]
-  			minHeadway("A", "B", net) = minHeadway("B", "A", net), 
-  		[equalDrivingTimeOfBothDirectionsInConnection] 
-  			minDrivingTime("A", "B", net) = minDrivingTime("B", "A", net),
-  		[areDirectlyConnected]
-  			areDirectlyConnected("A", "B", net) = areDirectlyConnected("B", "A", net),
-  		[areDirectlyConnectedWithStopsThatAreNotConnected]
-  			areDirectlyConnected("A", "C", net) = false,
-  		[stopIsInNetwork]
-  			(all s1 : StopId :- s1 isin stops => isIn(s1, net))
+  		-- check whether the wellformed net is evaluated as being wellformed
+  		[netIsWellformed] isWellformed(net),
+  				
+  		-- tries to add a connection with a stop that is not defined in the network - this should yield a illformed net.
+  		[netIsNotWellformed] isWellformed(addConnection("D", "E", 2, 3, 9, net)) = false,
+  		
+  		-- tries to add a connection with two identical stops - this should yield a illformed net.
+  		[netIsNotWellformedWhenAddingAConnectionToSelf] isWellformed(addConnection("A", "A", 2, 4, 19, net)) = false,
+  		
+  		-- tries to insert a stop that already exists - this should not alter the net
+  		[insertDuplicateStop] insertStop("A", 2, net) = net,
+  			
+  		-- tries to insert a new stop - this should alter the net
+  		[insertNewStopAltersNet] insertStop("E", 4, net) ~= net,
+  			
+  		-- test whether the capacity of a connection is equal for both directions as it should be
+  		[equalCapacityOfBothDirectionsInConnection] capacity("A", "B", net) = capacity("B", "A", net),
+  			
+  		-- test whether the headway of a connection is equal for both directions as it should be
+  		[equalHeadwayOfBothDirectionsInConnection] minHeadway("A", "B", net) = minHeadway("B", "A", net),
+  			
+  		-- test whether the driving time of a connection is equal for both directions as it should be
+  		[equalDrivingTimeOfBothDirectionsInConnection] minDrivingTime("A", "B", net) = minDrivingTime("B", "A", net),
+  			
+  		-- test whether two stops are directly connected
+  		[areDirectlyConnected] areDirectlyConnected("A", "B", net), 
+  			
+  		-- test whether two stops (that are not connected) are directly connected
+  		[areDirectlyConnectedWithStopsThatAreNotConnected] areDirectlyConnected("A", "C", net) = false,
+  			
+  		-- checks whether all the stops are in the net
+  		[stopIsInNetwork] (all s1 : StopId :- s1 isin stops => isIn(s1, net))
  end
